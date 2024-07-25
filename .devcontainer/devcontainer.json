@@ -1,0 +1,15 @@
+{
+  "name": "garden-a10a-app",
+  "dockerComposeFile": "compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "postStartCommand": "npm install -g npm",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "prisma.prisma"
+      ]
+    }
+  }
+}
