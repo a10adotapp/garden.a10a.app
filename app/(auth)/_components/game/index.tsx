@@ -19,8 +19,8 @@ export function Game() {
         // If AUTO, it doesn't work on smartphone browser
         // type: AUTO,
         type: CANVAS,
-        width: 3200,
-        height: 3200 / (aspectRatio),
+        width: 320,
+        height: 320 / (aspectRatio),
         scale: {
           mode: Scale.ScaleModes.FIT,
         },

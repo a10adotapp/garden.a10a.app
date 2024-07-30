@@ -14,7 +14,7 @@ export class FieldManager {
 
   scene: Scene;
 
-  tilemap?: Tilemaps.Tilemap;
+  tilemap!: Tilemaps.Tilemap;
 
   state: FieldManagerState;
 
@@ -46,7 +46,7 @@ export class FieldManager {
       tileHeight: 32,
     });
 
-    const tiles = this.tilemap?.addTilesetImage("tiles");
+    const tiles = this.tilemap.addTilesetImage("tiles");
 
     if (tiles) {
       this.tilemap?.createLayer(0, tiles);

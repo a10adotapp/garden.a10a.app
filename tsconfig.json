@@ -32,7 +32,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/(auth)/_components/game/scenes/main-scene/lib/character-manager"
+    "app/(auth)/_components/game/scenes/main-scene/lib/character-manager",
+    "app/(auth)/_components/game/scenes/main-scene/lib/character-manager/_actions"
   ],
   "exclude": [
     "node_modules"

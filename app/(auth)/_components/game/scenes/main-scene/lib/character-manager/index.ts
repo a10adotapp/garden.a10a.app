@@ -1,37 +1,30 @@
 import { GameObjects, Scene } from "phaser";
 import { FieldManager, FieldManagerState } from "../field-manager";
 import { Character } from "../models/character";
+import { Registry } from "../registry";
+import { listNonplayer } from "./_actions/list-nonplayer";
 
-export type CharacterManagerState = {
+export type NonplayersManagerState = {
   characters: Character[];
-  characterByPosition: {
-    [y in number]: {
-      [x in number]: Character;
-    };
-  };
   selectedCharacter: Character | null;
 };
 
-export class CharacterManager {
+export class NonplayersManager {
   static Events = {
-    STATE_UPDATED: "CharacterManager.stateUpdated",
+    STATE_UPDATED: "NonPlayersManager.stateUpdated",
   };
 
   scene: Scene;
 
-  layer?: GameObjects.Layer;
+  layer!: GameObjects.Layer;
 
-  fieldManager: FieldManager;
+  state: NonplayersManagerState;
 
-  state: CharacterManagerState;
-
-  constructor(scene: Scene, fieldManager: FieldManager) {
+  constructor(scene: Scene) {
     this.scene = scene;
-    this.fieldManager = fieldManager;
 
     this.state = {
       characters: [],
-      characterByPosition: {},
       selectedCharacter: null,
     };
   }
@@ -46,36 +39,33 @@ export class CharacterManager {
     this.scene.events.on(FieldManager.Events.STATE_UPDATED, this.onFieldManagerStateUpdated, this);
   }
 
-  initCharacters() {
-    this.state.characters = [
-      new Character({
-        playerId: "player",
-        name: "Arakaki",
-        image: "himiko",
-        position: {
-          x: 50,
-          y: 50,
-        },
-      }),
-    ];
+  async initCharacters() {
+    this.state.characters = await listNonplayer();
+
+    const fieldManager = Registry.getFieldManager(this.scene);
 
     for (const character of this.state.characters) {
-      const tile = this.fieldManager.getTile(character.position);
+      const tile = fieldManager.getTile(character.position);
 
       if (tile) {
-        const image = this.scene.add.image(tile.getCenterX(), tile.getCenterY(), character.image);
+        const container = this.scene.make.container({
+          x: tile.getCenterX(this.scene.cameras.main),
+          y: tile.getCenterY(this.scene.cameras.main),
+        });
 
-        this.layer?.add(image);
+        container.setName("Character.container");
 
-        if (!this.state.characterByPosition[tile.y]) {
-          this.state.characterByPosition[tile.y] = {};
-        }
+        this.layer?.add(container);
 
-        this.state.characterByPosition[tile.y][tile.x] = character;
+        const image = this.scene.make.image({
+          key: character.image,
+        });
+
+        container.add(image);
       }
     }
 
-    this.scene.events.emit(CharacterManager.Events.STATE_UPDATED, {
+    this.scene.events.emit(NonplayersManager.Events.STATE_UPDATED, {
       trigger: "initCharacters",
       state: this.state,
     });
@@ -89,10 +79,13 @@ export class CharacterManager {
     this.state.selectedCharacter = null;
 
     if (state.selectedTile.current) {
-      this.state.selectedCharacter = this.state.characterByPosition[state.selectedTile.current.y]?.[state.selectedTile.current.x];
+      this.state.selectedCharacter = this.state.characters.find((character) => {
+        return (character.position.x === state.selectedTile.current!.x)
+          && (character.position.y === state.selectedTile.current!.y);
+      }) || null;
     }
 
-    this.scene.events.emit(CharacterManager.Events.STATE_UPDATED, {
+    this.scene.events.emit(NonplayersManager.Events.STATE_UPDATED, {
       trigger: "onFieldManagerStateUpdated",
       state: this.state,
     });
@@ -101,11 +94,10 @@ export class CharacterManager {
   resetState() {
     this.state = {
       characters: [],
-      characterByPosition: {},
       selectedCharacter: null,
     };
 
-    this.scene.events.emit(CharacterManager.Events.STATE_UPDATED, {
+    this.scene.events.emit(NonplayersManager.Events.STATE_UPDATED, {
       trigger: "resetState",
       state: this.state,
     });

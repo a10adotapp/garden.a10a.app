@@ -1,6 +1,9 @@
 import { GameObjects, Scene } from "phaser";
-import { CharacterManager, CharacterManagerState } from "../character-manager";
+import { NonplayersManager, NonplayersManagerState } from "../character-manager";
 import { FieldManager, FieldManagerState } from "../field-manager";
+import { Character } from "../models/character";
+import { Registry } from "../registry";
+import { PlayerCharacterDisplay } from "./player-character-display";
 import { SelectedCharacterDisplay } from "./selected-character-display";
 import { SelectedTileDisplay } from "./selected-tile-display";
 
@@ -11,12 +14,16 @@ export class StateDisplayManager {
 
   selectedTileDisplay: SelectedTileDisplay;
 
+  playerCharacterDisplay: PlayerCharacterDisplay;
+
   selectedCharacterDisplay: SelectedCharacterDisplay;
 
   constructor(scene: Scene) {
     this.scene = scene;
 
     this.selectedTileDisplay = new SelectedTileDisplay(scene);
+
+    this.playerCharacterDisplay = new PlayerCharacterDisplay(scene);
 
     this.selectedCharacterDisplay = new SelectedCharacterDisplay(scene);
   }
@@ -26,10 +33,21 @@ export class StateDisplayManager {
 
     this.selectedTileDisplay.init(this.layer);
 
+    this.playerCharacterDisplay.init(this.layer);
+
     this.selectedCharacterDisplay.init(this.layer);
 
+    this.scene.events.on(Registry.Events.PLAYER_SET, this.onRegistryPlayerSet, this);
     this.scene.events.on(FieldManager.Events.STATE_UPDATED, this.onFieldManagerStateUpdated, this);
-    this.scene.events.on(CharacterManager.Events.STATE_UPDATED, this.onCharacterManagerStateUpdated, this);
+    this.scene.events.on(NonplayersManager.Events.STATE_UPDATED, this.onCharacterManagerStateUpdated, this);
+  }
+
+  onRegistryPlayerSet({
+    player,
+  }: {
+    player: Character;
+  }) {
+    this.playerCharacterDisplay.updateText(player);
   }
 
   onFieldManagerStateUpdated({
@@ -39,7 +57,6 @@ export class StateDisplayManager {
     trigger: string;
     state: FieldManagerState;
   }) {
-    console.log({arguments});
     this.selectedTileDisplay.updateText(state.selectedTile.current);
   }
 
@@ -48,7 +65,7 @@ export class StateDisplayManager {
     state,
   }: {
     trigger: string;
-    state: CharacterManagerState;
+    state: NonplayersManagerState;
   }) {
     this.selectedCharacterDisplay.updateText(state.selectedCharacter);
   }

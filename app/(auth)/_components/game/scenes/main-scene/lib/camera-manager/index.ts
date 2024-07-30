@@ -15,9 +15,10 @@ export class CameraManager {
   }
 
   init() {
-    this.scene.cameras.main.zoom = 10;
+    this.scene.cameras.main.zoom = 1;
 
-    const { x, y } = this.scene.cameras.main.getScroll(1600, 1600);
+    const { x, y } = this.scene.cameras.main.getScroll(1600 + 16, 1600 + 16);
+
     this.scene.cameras.main.setScroll(x, y);
 
     this.scene.input.on(Input.Events.POINTER_DOWN, this.onPointerDown, this);
